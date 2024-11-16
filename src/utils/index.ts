@@ -5,6 +5,7 @@ const descriptionSchema = Bp.lorem.sentences(5);
 const dateSchema = Bp.date.between('2024-11-15', '2024-11-30');
 
 const todoSchema = Bp.object({
+  id: Bp.datatype.uuid(),
   title: titleSchema,
   description: descriptionSchema,
   date: dateSchema,

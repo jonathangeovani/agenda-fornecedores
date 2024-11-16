@@ -8,30 +8,21 @@ import {
 } from 'date-fns';
 import { useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { formatDate } from '../../utils/date';
 
-interface IAgendaProps {
+interface IAgendaProps<DataItem extends any> {
   pastWeeks?: number;
   futureWeeks?: number;
+  data: Record<string, DataItem[]>;
+  keyExtractor: (item: DataItem) => any;
+  renderItem(item: DataItem): JSX.Element;
 }
 
-interface AgendaDayObject {
-  date: Date;
-  str: string;
-  short: string;
-  number: string;
-}
-
-const formatDate = (date: Date): AgendaDayObject => ({
-  date: date,
-  str: format(date, 'dd-MM-yyyy'),
-  short: format(date, 'ccc'),
-  number: format(date, 'dd'),
-});
-
-export default function Agenda({
+export default function Agenda<DataItem>({
   pastWeeks = 1,
   futureWeeks = 1,
-}: IAgendaProps) {
+  ...props
+}: IAgendaProps<DataItem>) {
   const [calendarWidth, setCalendarWidth] = useState<number>(0);
   const [agendaListWidth, setAgendaListWidth] = useState<number>(0);
 
@@ -54,6 +45,8 @@ export default function Agenda({
 
     return weeks;
   }, [pastWeeks, futureWeeks]);
+
+  const highlightedDays = useMemo(() => Object.keys(props.data), [props.data]);
 
   return (
     <View style={styles.container}>
@@ -90,17 +83,24 @@ export default function Agenda({
                 key={idx}
                 style={[styles.weekWrapper, { width: calendarWidth }]}
               >
-                {calendarWeek.map((day) => (
-                  <View key={day.str} style={styles.dayContainer}>
-                    <Text style={styles.dayShort}>{day.short}</Text>
-                    <Text style={styles.dayNumber}>{day.number}</Text>
-                  </View>
-                ))}
+                {calendarWeek.map((day) => {
+                  const isHighlighted = highlightedDays.includes(day.str);
+                  const color = isHighlighted ? '#000' : '#909090';
+                  const fontWeight = isHighlighted ? 600 : 400;
+
+                  return (
+                    <View key={day.str} style={styles.dayContainer}>
+                      <Text style={{ color, fontWeight }}>{day.short}</Text>
+                      <Text style={{ color, fontWeight }}>{day.number}</Text>
+                    </View>
+                  );
+                })}
               </View>
             ))}
           </ScrollView>
         </View>
       </View>
+
       {/* Agenda List */}
       <View style={agendaStyles.container}>
         <ScrollView
@@ -136,17 +136,34 @@ export default function Agenda({
                 style={agendaStyles.weekScrollable}
                 showsHorizontalScrollIndicator={false}
               >
-                {agendaWeek.map((day, dayIdx) => (
-                  <View key={dayIdx} style={agendaStyles.dayWrapper}>
-                    <View style={agendaStyles.dayIdentifier}>
-                      <Text style={agendaStyles.dayShort}>{day.short}</Text>
-                      <Text style={agendaStyles.dayNumber}>{day.number}</Text>
+                {agendaWeek.map((day) => {
+                  const isHighlighted = highlightedDays.includes(day.str);
+                  const backgroundColor = isHighlighted ? '#f7f7ff' : '#fff';
+                  return (
+                    <View key={day.str} style={agendaStyles.dayWrapper}>
+                      <View style={agendaStyles.dayIdentifier}>
+                        <Text style={agendaStyles.dayShort}>{day.short}</Text>
+                        <Text style={agendaStyles.dayNumber}>{day.number}</Text>
+                      </View>
+                      <View
+                        style={[
+                          agendaStyles.dayContentWrapper,
+                          { backgroundColor },
+                        ]}
+                      >
+                        <View style={agendaStyles.dayContent}>
+                          {props.data[day.str] &&
+                            props.data[day.str].map((item) => {
+                              const ScheduleItem = () => props.renderItem(item);
+                              return (
+                                <ScheduleItem key={props.keyExtractor(item)} />
+                              );
+                            })}
+                        </View>
+                      </View>
                     </View>
-                    <View style={agendaStyles.dayContent}>
-                      <Text>content</Text>
-                    </View>
-                  </View>
-                ))}
+                  );
+                })}
               </ScrollView>
             </View>
           ))}
@@ -156,45 +173,10 @@ export default function Agenda({
   );
 }
 
-const agendaStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  weekScrollable: {
-    flex: 1,
-  },
-  weekWrapper: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  dayWrapper: {
-    flex: 1,
-    flexDirection: 'row',
-    paddingVertical: 8,
-    borderBottomColor: '#c0c0c0',
-    borderBottomWidth: 1,
-  },
-  dayIdentifier: {
-    flex: 1,
-    paddingLeft: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayContent: {
-    flex: 5,
-    padding: 8,
-    borderLeftColor: '#c0c0c0',
-    borderLeftWidth: 1,
-    justifyContent: 'center',
-  },
-  dayShort: {},
-  dayNumber: {},
-});
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'red',
+    backgroundColor: '#eee',
   },
   calendar: {
     backgroundColor: '#fff',
@@ -211,9 +193,57 @@ const styles = StyleSheet.create({
   },
   dayContainer: {
     flex: 1,
+    paddingVertical: 8,
     alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+});
+
+const agendaStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  weekScrollable: {
+    flex: 1,
+  },
+  weekWrapper: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  dayWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    paddingVertical: 8,
+    paddingRight: 8,
+    borderBottomColor: '#c0c0c0',
+    borderBottomWidth: 1,
+  },
+  dayIdentifier: {
+    flex: 1,
+    paddingTop: 8,
+    paddingLeft: 8,
+    alignItems: 'center',
+    borderRightColor: '#c0c0c0',
+    borderRightWidth: 1,
+  },
+  dayShort: {
+    fontWeight: 500,
+  },
+  dayNumber: {
+    fontSize: 24,
+  },
+  dayContentWrapper: {
+    flex: 6,
+    marginLeft: 8,
+    padding: 8,
+    paddingLeft: 0,
+    backgroundColor: '#f7f7ff',
+    borderRadius: 8,
+  },
+  dayContent: {
+    flex: 1,
+    paddingTop: 8,
+    paddingLeft: 8,
     justifyContent: 'center',
   },
-  dayShort: {},
-  dayNumber: {},
 });
