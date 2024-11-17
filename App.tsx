@@ -18,18 +18,20 @@ const data = _.groupBy(supplierCollection, (supplier) =>
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" backgroundColor="#fff" />
-      <SafeAreaView edges={['top']} style={styles.container}>
-        <Agenda
-          pastWeeks={1}
-          futureWeeks={1}
-          data={data}
-          keyExtractor={(item) => item.id}
-          renderItem={(item) => <ScheduleItem data={item} />}
-        />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <SafeAreaView edges={['top']} style={styles.container}>
+          <Agenda
+            pastWeeks={1}
+            futureWeeks={1}
+            data={data}
+            keyExtractor={(item) => item.id}
+            renderItem={(item) => <ScheduleItem data={item} />}
+          />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </View>
   );
 }
 
