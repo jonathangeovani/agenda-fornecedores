@@ -1,20 +1,20 @@
 import { Blueprint as Bp } from '@cicerotcv/blueprint';
 
-const titleSchema = Bp.lorem.sentence(3).transform((s) => s.replace('.', ''));
-const descriptionSchema = Bp.lorem.sentences(5);
-const dateSchema = Bp.date.between('2024-11-15', '2024-11-30');
+const nameSchema = Bp.names.fullName();
+const phoneSchema = Bp.phone.number('(!#) 9####-####');
+const dateSchema = Bp.date.between('2024-11-12', '2024-11-30');
 
-const todoSchema = Bp.object({
+const supplierSchema = Bp.object({
   id: Bp.datatype.uuid(),
-  title: titleSchema,
-  description: descriptionSchema,
+  name: nameSchema,
+  phone: phoneSchema,
   date: dateSchema,
 });
 
-const todoCollectionSchema = Bp.array({
+const supplierCollectionSchema = Bp.array({
   minLength: 30,
   maxLength: 40,
-  schema: todoSchema,
+  schema: supplierSchema,
 });
 
-export const todoCollection = todoCollectionSchema.compile();
+export const supplierCollection = supplierCollectionSchema.compile();

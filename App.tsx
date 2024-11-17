@@ -1,19 +1,25 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Linking,
+} from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Agenda from './src/components/Agenda';
-import { todoCollection } from './src/utils';
+import { supplierCollection } from './src/utils';
 import _ from 'lodash';
 import { format } from 'date-fns';
 
-const data = _.groupBy(todoCollection, (todo) =>
-  format(todo.date, 'dd-MM-yyyy')
+const data = _.groupBy(supplierCollection, (supplier) =>
+  format(supplier.date, 'dd-MM-yyyy')
 );
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" backgroundColor="#cc0800" />
+      <StatusBar style="dark" backgroundColor="#fff" />
       <SafeAreaView edges={['top']} style={styles.container}>
         <Agenda
           pastWeeks={1}
@@ -27,16 +33,19 @@ export default function App() {
   );
 }
 
-const ScheduleItem: React.FC<{ data: (typeof todoCollection)[number] }> = ({
+const ScheduleItem: React.FC<{ data: (typeof supplierCollection)[number] }> = ({
   data,
 }) => {
   return (
-    <View style={itemStyles.container}>
+    <TouchableOpacity
+      onPress={() => Linking.openURL(`tel:${data.phone.replaceAll(/\D/g, '')}`)}
+      style={itemStyles.container}
+    >
       <View style={itemStyles.header}>
-        <Text style={itemStyles.title}>{data.title}</Text>
+        <Text style={itemStyles.name}>{data.name}</Text>
       </View>
-      <Text style={itemStyles.description}>{data.description}</Text>
-    </View>
+      <Text style={itemStyles.phone}>{data.phone}</Text>
+    </TouchableOpacity>
   );
 };
 
@@ -55,12 +64,12 @@ const itemStyles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
     borderBottomWidth: 1,
   },
-  title: {
+  name: {
     color: '#000',
     fontSize: 16,
     fontWeight: 500,
   },
-  description: {
+  phone: {
     color: '#505050',
     fontSize: 14,
   },
