@@ -1,4 +1,6 @@
 import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { capitalize } from 'lodash';
 
 export interface AgendaDayObject {
   date: Date;
@@ -10,6 +12,6 @@ export interface AgendaDayObject {
 export const formatDate = (date: Date): AgendaDayObject => ({
   date: date,
   str: format(date, 'dd-MM-yyyy'),
-  short: format(date, 'ccc'),
+  short: capitalize(format(date, 'cccccc', { locale: ptBR })),
   number: format(date, 'dd'),
 });

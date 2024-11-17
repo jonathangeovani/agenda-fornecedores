@@ -3,7 +3,6 @@ import {
   addWeeks,
   eachDayOfInterval,
   eachWeekOfInterval,
-  format,
   subWeeks,
 } from 'date-fns';
 import { useMemo, useRef, useState } from 'react';
