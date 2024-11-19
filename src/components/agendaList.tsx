@@ -7,7 +7,7 @@ import {
 } from 'date-fns';
 import { useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { formatDate } from '../../utils/date';
+import { formatDate } from '../utils/date';
 
 interface IAgendaProps<DataItem extends any> {
   pastWeeks?: number;
@@ -17,7 +17,7 @@ interface IAgendaProps<DataItem extends any> {
   renderItem(item: DataItem): JSX.Element;
 }
 
-export default function Agenda<DataItem>({
+export default function AgendaList<DataItem>({
   pastWeeks = 1,
   futureWeeks = 1,
   ...props
