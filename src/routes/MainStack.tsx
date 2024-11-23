@@ -14,7 +14,7 @@ const MainStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="Agenda">
-        {(props) => <AgendaScreen {...props} weekOffset={1} />}
+        {(props) => <AgendaScreen {...props} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
