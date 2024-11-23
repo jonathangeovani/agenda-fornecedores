@@ -289,10 +289,6 @@ export default function SupplierDetailScreen({
                 },
               ]}
               onPress={confirmToDelete}
-              disabled={
-                !fieldChaged ||
-                deliveryDays.filter((day) => day.selected).length == 0
-              }
             >
               <Text style={styles.buttonText}>Apagar cadastro</Text>
             </TouchableOpacity>
