@@ -5,6 +5,7 @@ import { MainStackParamList } from './MainStackParamList';
 import SupplierListScreen from '../screens/SupplierListScreen';
 import SupplierDetailScreen from '../screens/SupplierDetailScreen';
 import { Image } from 'react-native';
+import AddSupplierScreen from '../screens/AddSupplierScreen';
 
 const MainStack = () => {
   const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -25,6 +26,13 @@ const MainStack = () => {
       <Stack.Screen
         name="SupplierDetail"
         component={SupplierDetailScreen}
+        options={{
+          title: 'Detalhes do Fornecedor',
+        }}
+      />
+      <Stack.Screen
+        name="AddSupplier"
+        component={AddSupplierScreen}
         options={{
           title: 'Detalhes do Fornecedor',
         }}

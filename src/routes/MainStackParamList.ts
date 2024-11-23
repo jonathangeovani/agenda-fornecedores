@@ -16,4 +16,5 @@ export type MainStackParamList = {
   Agenda: AgendaParams;
   SupplierList: SupplierListParams;
   SupplierDetail: SupplierDetailParams;
+  AddSupplier: undefined;
 };
