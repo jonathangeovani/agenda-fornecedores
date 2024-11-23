@@ -38,7 +38,7 @@ export default function RegisterSection() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.operationButton}
-          onPress={() => console.log('SupplierListScreen')}
+          onPress={() => navigation.navigate('SupplierList', {})}
         >
           <View style={{ gap: 10 }}>
             <View

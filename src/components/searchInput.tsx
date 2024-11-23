@@ -5,9 +5,22 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  NativeSyntheticEvent,
+  TextInputSubmitEditingEventData,
+  LayoutChangeEvent,
 } from 'react-native';
 
-export default function SearchInput() {
+type SearchInputProps = {
+  submitAction: (
+    event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
+  ) => void;
+  defaultText?: string;
+};
+
+export default function SearchInput({
+  submitAction,
+  defaultText,
+}: SearchInputProps) {
   const searchInput = useRef<TextInput>(null);
   const [searchFocused, setSearchFocused] = useState<Boolean>(false);
 
@@ -19,13 +32,13 @@ export default function SearchInput() {
           styles.searchInput,
           { borderColor: searchFocused ? '#777' : '#e6e6e6', borderWidth: 1 },
         ]}
+        autoCorrect={false}
         enterKeyHint="search"
-        ref={searchInput}
         onBlur={() => setSearchFocused(false)}
         onFocus={() => setSearchFocused(true)}
-        onSubmitEditing={(e) => {
-          console.log(e.nativeEvent.text);
-        }}
+        onSubmitEditing={submitAction}
+        defaultValue={defaultText}
+        ref={searchInput}
       />
       {searchInput.current?.isFocused() && (
         <TouchableOpacity

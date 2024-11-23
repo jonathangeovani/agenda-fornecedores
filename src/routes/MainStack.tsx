@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
 import AgendaScreen from '../screens/AgendaScreen';
 import { MainStackParamList } from './MainStackParamList';
+import SupplierListScreen from '../screens/SupplierListScreen';
 
 const MainStack = () => {
   const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -16,6 +17,11 @@ const MainStack = () => {
       <Stack.Screen name="Agenda">
         {(props) => <AgendaScreen {...props} />}
       </Stack.Screen>
+      <Stack.Screen
+        name="SupplierList"
+        component={SupplierListScreen}
+        options={{ title: 'Fornecedores' }}
+      />
     </Stack.Navigator>
   );
 };
