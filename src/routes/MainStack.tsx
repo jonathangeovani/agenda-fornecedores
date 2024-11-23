@@ -13,7 +13,9 @@ const MainStack = () => {
         component={HomeScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen name="Agenda" component={AgendaScreen} />
+      <Stack.Screen name="Agenda">
+        {(props) => <AgendaScreen {...props} weekOffset={1} />}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 };

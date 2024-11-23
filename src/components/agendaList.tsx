@@ -1,3 +1,6 @@
+import { useMemo, useRef, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { formatDate } from '../utils/date';
 import {
   addDays,
   addWeeks,
@@ -5,9 +8,6 @@ import {
   eachWeekOfInterval,
   subWeeks,
 } from 'date-fns';
-import { useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { formatDate } from '../utils/date';
 
 interface IAgendaProps<DataItem extends any> {
   pastWeeks?: number;
@@ -15,11 +15,15 @@ interface IAgendaProps<DataItem extends any> {
   data: Record<string, DataItem[]>;
   keyExtractor: (item: DataItem) => any;
   renderItem(item: DataItem): JSX.Element;
+  weekOffset?: number;
+  dayOffset?: number;
 }
 
 export default function AgendaList<DataItem>({
   pastWeeks = 1,
   futureWeeks = 1,
+  weekOffset = 1,
+  dayOffset = 0,
   ...props
 }: IAgendaProps<DataItem>) {
   const [calendarWidth, setCalendarWidth] = useState<number>(0);
@@ -27,6 +31,8 @@ export default function AgendaList<DataItem>({
 
   const calendarRef = useRef<ScrollView>(null);
   const agendaRef = useRef<ScrollView>(null);
+  const [weekRef, setWeekRef] = useState<ScrollView[]>([]);
+
   const scrollControll = useRef({
     isCalendarScrolling: false,
     isAgendaScrolling: false,
@@ -46,12 +52,17 @@ export default function AgendaList<DataItem>({
   }, [pastWeeks, futureWeeks]);
 
   const highlightedDays = useMemo(() => Object.keys(props.data), [props.data]);
+  const [agendaDaysOffset, setAgendaDaysOffset] = useState<number[][]>([
+    [],
+    [],
+    [],
+  ]);
 
   return (
     <View style={styles.container}>
       {/* Calendar */}
       <View style={styles.calendar}>
-        <View style={styles.calendarScrollContainer}>
+        <View>
           <ScrollView
             style={styles.calendarScrollable}
             showsHorizontalScrollIndicator={false}
@@ -108,6 +119,11 @@ export default function AgendaList<DataItem>({
           showsHorizontalScrollIndicator={false}
           onLayout={(e) => {
             setAgendaListWidth(e.nativeEvent.layout.width);
+            scrollControll.current.isAgendaScrolling = true;
+            scrollControll.current.isCalendarScrolling = false;
+            agendaRef.current?.scrollTo({
+              x: agendaListWidth * weekOffset,
+            });
           }}
           onScrollBeginDrag={() => {
             // Only one scroll element should be controlling the movement
@@ -134,12 +150,31 @@ export default function AgendaList<DataItem>({
               <ScrollView
                 style={agendaStyles.weekScrollable}
                 showsHorizontalScrollIndicator={false}
+                ref={(ref) => {
+                  if (ref) {
+                    weekRef[weekIdx] = ref;
+                    setWeekRef(weekRef);
+                  }
+                }}
+                onLayout={() => {
+                  weekRef[weekOffset].scrollTo({
+                    y: agendaDaysOffset[weekOffset][dayOffset],
+                  });
+                }}
               >
-                {agendaWeek.map((day) => {
+                {agendaWeek.map((day, dayIdx) => {
                   const isHighlighted = highlightedDays.includes(day.str);
                   const backgroundColor = isHighlighted ? '#f7f7ff' : '#fff';
                   return (
-                    <View key={day.str} style={agendaStyles.dayWrapper}>
+                    <View
+                      key={day.str}
+                      style={agendaStyles.dayWrapper}
+                      onLayout={(e) => {
+                        agendaDaysOffset[weekIdx][dayIdx] =
+                          e.nativeEvent.layout.y;
+                        setAgendaDaysOffset(agendaDaysOffset);
+                      }}
+                    >
                       <View style={agendaStyles.dayIdentifier}>
                         <Text style={agendaStyles.dayShort}>{day.short}</Text>
                         <Text style={agendaStyles.dayNumber}>{day.number}</Text>
@@ -183,7 +218,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#c0c0c0',
     borderBottomWidth: 1,
   },
-  calendarScrollContainer: {},
   calendarScrollable: {
     flexDirection: 'row',
   },

@@ -9,6 +9,10 @@ import AgendaList from '../components/agendaList';
 import { format } from 'date-fns';
 import _ from 'lodash';
 import { supplierCollection } from '../utils';
+import { MainStackParamList } from '../routes/MainStackParamList';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+type AgendaScreenProps = NativeStackScreenProps<MainStackParamList, 'Agenda'>;
 
 const ScheduleItem: React.FC<{ data: (typeof supplierCollection)[number] }> = ({
   data,
@@ -26,7 +30,7 @@ const ScheduleItem: React.FC<{ data: (typeof supplierCollection)[number] }> = ({
   );
 };
 
-export default function AgendaScreen() {
+export default function AgendaScreen({ route, navigation }: AgendaScreenProps) {
   const data = _.groupBy(supplierCollection, (supplier) =>
     format(supplier.date, 'dd-MM-yyyy')
   );
@@ -35,6 +39,8 @@ export default function AgendaScreen() {
     <AgendaList
       pastWeeks={1}
       futureWeeks={1}
+      weekOffset={route.params?.weekOffset}
+      dayOffset={route.params?.dayOffset}
       data={data}
       keyExtractor={(item) => item.id}
       renderItem={(item) => <ScheduleItem data={item} />}
