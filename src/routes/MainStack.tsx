@@ -3,6 +3,8 @@ import HomeScreen from '../screens/HomeScreen';
 import AgendaScreen from '../screens/AgendaScreen';
 import { MainStackParamList } from './MainStackParamList';
 import SupplierListScreen from '../screens/SupplierListScreen';
+import SupplierDetailScreen from '../screens/SupplierDetailScreen';
+import { Image } from 'react-native';
 
 const MainStack = () => {
   const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -14,13 +16,18 @@ const MainStack = () => {
         component={HomeScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen name="Agenda">
-        {(props) => <AgendaScreen {...props} />}
-      </Stack.Screen>
+      <Stack.Screen name="Agenda" component={AgendaScreen} />
       <Stack.Screen
         name="SupplierList"
         component={SupplierListScreen}
         options={{ title: 'Fornecedores' }}
+      />
+      <Stack.Screen
+        name="SupplierDetail"
+        component={SupplierDetailScreen}
+        options={{
+          title: 'Detalhes do Fornecedor',
+        }}
       />
     </Stack.Navigator>
   );

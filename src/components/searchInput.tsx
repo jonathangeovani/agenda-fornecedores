@@ -19,7 +19,7 @@ type SearchInputProps = {
 
 export default function SearchInput({
   submitAction,
-  defaultText,
+  defaultText = '',
 }: SearchInputProps) {
   const searchInput = useRef<TextInput>(null);
   const [searchFocused, setSearchFocused] = useState<Boolean>(false);
@@ -38,24 +38,10 @@ export default function SearchInput({
         onFocus={() => setSearchFocused(true)}
         onSubmitEditing={submitAction}
         defaultValue={defaultText}
+        clearButtonMode="while-editing"
+        clearTextOnFocus
         ref={searchInput}
       />
-      {searchInput.current?.isFocused() && (
-        <TouchableOpacity
-          onPress={() => {
-            searchInput.current?.clear();
-            searchInput.current?.blur();
-          }}
-        >
-          <Image
-            width={30}
-            height={30}
-            source={{
-              uri: 'https://cdn-icons-png.flaticon.com/512/106/106830.png',
-            }}
-          />
-        </TouchableOpacity>
-      )}
     </View>
   );
 }

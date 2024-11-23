@@ -17,7 +17,10 @@ type SupplierListScreenProps = NativeStackScreenProps<
   'SupplierList'
 >;
 
-export default function SupplierListScreen({ route }: SupplierListScreenProps) {
+export default function SupplierListScreen({
+  route,
+  navigation,
+}: SupplierListScreenProps) {
   const groupedSuppliers = useMemo(
     () => _.groupBy(supplierCollection, (supplier) => supplier.name[0]),
     [supplierCollection]
@@ -73,7 +76,9 @@ export default function SupplierListScreen({ route }: SupplierListScreenProps) {
                       setSupplierRef(supplierRef);
                     }}
                     onPress={() => {
-                      console.log('Clicked on', supplier);
+                      navigation.navigate('SupplierDetail', {
+                        id: supplier.id,
+                      });
                     }}
                   >
                     <Text style={styles.supplierText}>{supplier.name}</Text>
@@ -98,6 +103,7 @@ export default function SupplierListScreen({ route }: SupplierListScreenProps) {
 
 const styles = StyleSheet.create({
   container: {
+    height: '100%',
     paddingTop: 10,
     backgroundColor: '#fff',
   },
