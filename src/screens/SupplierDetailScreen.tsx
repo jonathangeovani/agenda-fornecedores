@@ -134,6 +134,7 @@ export default function SupplierDetailScreen({
   const [nameIsHighlighted, setNameIsHighlighted] = useState<boolean>(false);
   const [phoneIsHighlighted, setPhoneIsHighlighted] = useState<boolean>(false);
   const [customDate, setCustomDate] = useState<boolean>(false);
+  const [isImportant, setIsImportant] = useState<boolean>(false);
   const [fieldChaged, setFieldChanged] = useState<boolean>(false);
 
   const [deliveryDays, setDeliveryDays] = useState(days);
@@ -213,7 +214,7 @@ export default function SupplierDetailScreen({
               })}
             </ScrollView>
             <View style={styles.switchWrapper}>
-              <Text style={{ flex: 1, fontSize: 20 }}>
+              <Text style={{ flex: 1, fontSize: 18 }}>
                 Entrega toda semana:
               </Text>
               <Switch
@@ -224,35 +225,47 @@ export default function SupplierDetailScreen({
                 value={!customDate}
               />
             </View>
-          </View>
-          {customDate && (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-              }}
-            >
-              <Text style={{ fontSize: 20 }}>Entrega a cada:</Text>
-              <TextInput
+            {customDate && (
+              <View
                 style={{
-                  fontSize: 20,
-                  marginHorizontal: 8,
-                  paddingVertical: 4,
-                  paddingHorizontal: 10,
-                  borderBottomWidth: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
                 }}
-                defaultValue="2"
-                keyboardType="number-pad"
-                clearTextOnFocus
-                onSubmitEditing={(e) => {
-                  if (!(Number(e.nativeEvent.text) > 1)) setCustomDate(false);
+              >
+                <Text style={{ fontSize: 18 }}>Entrega a cada:</Text>
+                <TextInput
+                  style={{
+                    fontSize: 20,
+                    marginHorizontal: 8,
+                    paddingVertical: 4,
+                    paddingHorizontal: 10,
+                    borderBottomWidth: 1,
+                  }}
+                  defaultValue="2"
+                  keyboardType="number-pad"
+                  clearTextOnFocus
+                  onSubmitEditing={(e) => {
+                    if (!(Number(e.nativeEvent.text) > 1)) setCustomDate(false);
+                  }}
+                  ref={weeksInputRef}
+                />
+                <Text style={{ fontSize: 18 }}>semanas</Text>
+              </View>
+            )}
+            <View style={styles.switchWrapper}>
+              <Text style={{ flex: 1, fontSize: 18 }}>
+                Marcar como importante:
+              </Text>
+              <Switch
+                onChange={() => {
+                  setFieldChanged(true);
+                  setIsImportant((oldValue) => !oldValue);
                 }}
-                ref={weeksInputRef}
+                value={isImportant}
               />
-              <Text style={{ fontSize: 20 }}>semanas</Text>
             </View>
-          )}
+          </View>
         </View>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity
