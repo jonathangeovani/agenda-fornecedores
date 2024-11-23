@@ -10,34 +10,17 @@ import { MainStackParamList } from '../routes/MainStackParamList';
 import { supplierCollection } from '../utils';
 import _ from 'lodash';
 import SearchInput from '../components/searchInput';
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 type SupplierListScreenProps = NativeStackScreenProps<
   MainStackParamList,
   'SupplierList'
 >;
 
-export default function SupplierListScreen({
-  route,
-  navigation,
-}: SupplierListScreenProps) {
-  const dias = [
-    'Segunda-feira',
-    'Terça-feira',
-    'Quarta-feira',
-    'Quinta-feira',
-    'Sexta-feira',
-    'Sábado',
-    'Domingo',
-    'Segunda-feira a cada 15 dias',
-    'Quarta-feira a cada 15 dias',
-  ];
-
-  supplierCollection.sort((a, b) => (a.name > b.name ? 1 : -1));
-
-  const groupedSuppliers = _.groupBy(
-    supplierCollection,
-    (supplier) => supplier.name[0]
+export default function SupplierListScreen({ route }: SupplierListScreenProps) {
+  const groupedSuppliers = useMemo(
+    () => _.groupBy(supplierCollection, (supplier) => supplier.name[0]),
+    [supplierCollection]
   );
 
   const scrollRef = useRef<ScrollView>(null);

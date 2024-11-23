@@ -17,4 +17,6 @@ const supplierCollectionSchema = Bp.array({
   schema: supplierSchema,
 });
 
-export const supplierCollection = supplierCollectionSchema.compile();
+export const supplierCollection = supplierCollectionSchema
+  .compile()
+  .sort((a, b) => (a.name > b.name ? 1 : -1));
