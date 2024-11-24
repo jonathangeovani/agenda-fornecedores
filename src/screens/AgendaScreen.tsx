@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   Linking,
+  Image,
 } from 'react-native';
 import AgendaList from '../components/agendaList';
 import { format } from 'date-fns';
@@ -24,6 +25,15 @@ const ScheduleItem: React.FC<{ data: (typeof supplierCollection)[number] }> = ({
     >
       <View style={itemStyles.header}>
         <Text style={itemStyles.name}>{data.name}</Text>
+        {data.isImportant && (
+          <Image
+            source={{
+              uri: 'https://cdn-icons-png.flaticon.com/512/10308/10308557.png',
+            }}
+            width={15}
+            height={15}
+          />
+        )}
       </View>
       <Text style={itemStyles.phone}>{data.phone}</Text>
     </TouchableOpacity>
@@ -58,6 +68,8 @@ const itemStyles = StyleSheet.create({
     elevation: 1,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 8,
     paddingBottom: 8,
     borderBottomColor: '#e0e0e0',
