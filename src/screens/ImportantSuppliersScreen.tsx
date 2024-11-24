@@ -26,7 +26,11 @@ export default function ImportantSuppliersScreen({
     });
 
   return (
-    <ScrollView>
+    <ScrollView
+      style={{
+        backgroundColor: '#fff',
+      }}
+    >
       <View style={styles.container}>
         {importantSuppliers.map((supplier) => {
           const supplierDayOffset = weekDays.indexOf(
@@ -61,7 +65,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   supplier: {
-    paddingVertical: 10,
+    marginBottom: 10,
+    paddingBottom: 10,
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
     gap: 5,
