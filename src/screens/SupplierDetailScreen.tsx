@@ -13,7 +13,7 @@ import { MainStackParamList } from '../routes/MainStackParamList';
 import { supplierCollection } from '../utils';
 import _ from 'lodash';
 import { formatDate } from '../utils/date';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type SupplierDetailScreenProp = NativeStackScreenProps<
   MainStackParamList,
@@ -128,14 +128,17 @@ export default function SupplierDetailScreen({
     },
   ];
 
-  const nameInputRef = useRef<TextInput>(null);
-  const phoneInputRef = useRef<TextInput>(null);
-  const weeksInputRef = useRef<TextInput>(null);
-  const [nameIsHighlighted, setNameIsHighlighted] = useState<boolean>(false);
-  const [phoneIsHighlighted, setPhoneIsHighlighted] = useState<boolean>(false);
+  const [name, setName] = useState<string>(supplierDetails.name);
+  const [company, setCompany] = useState<string>(supplierDetails.company);
+  const [phone, setPhone] = useState<string>(supplierDetails.phone);
   const [customDate, setCustomDate] = useState<boolean>(false);
+  const [nameIsHighlighted, setNameIsHighlighted] = useState<boolean>(false);
+  const [companyIsHighlighted, setCompanyIsHighlighted] =
+    useState<boolean>(false);
+  const [phoneIsHighlighted, setPhoneIsHighlighted] = useState<boolean>(false);
   const [isImportant, setIsImportant] = useState<boolean>(false);
   const [fieldChaged, setFieldChanged] = useState<boolean>(false);
+  const [isInvalid, setIsInvalid] = useState<boolean>(false);
 
   const [deliveryDays, setDeliveryDays] = useState(days);
 
@@ -153,6 +156,14 @@ export default function SupplierDetailScreen({
       });
     });
   }, []);
+
+  useEffect(() => {
+    const emptyFields =
+      (!name && !company) ||
+      deliveryDays.filter((day) => day.selected).length == 0;
+
+    setIsInvalid(emptyFields || !fieldChaged);
+  }, [name, company, deliveryDays]);
 
   return (
     <ScrollView>
@@ -174,8 +185,36 @@ export default function SupplierDetailScreen({
               textContentType="name"
               onFocus={() => setNameIsHighlighted(true)}
               onBlur={() => setNameIsHighlighted(false)}
-              onChange={() => setFieldChanged(true)}
-              ref={nameInputRef}
+              onChange={(e) => {
+                const text = e.nativeEvent.text;
+                setName(text);
+                setFieldChanged(true);
+              }}
+              value={name}
+            />
+          </View>
+          <View style={styles.infoWrapper}>
+            <Text>Empresa:</Text>
+            <TextInput
+              style={[
+                styles.supplierInfo,
+                styles.textInput,
+                {
+                  borderBottomColor: companyIsHighlighted ? '#777' : '#ccc',
+                },
+              ]}
+              placeholder="Nome da empresa"
+              defaultValue={supplierDetails.company}
+              clearButtonMode="while-editing"
+              textContentType="organizationName"
+              onFocus={() => setCompanyIsHighlighted(true)}
+              onBlur={() => setCompanyIsHighlighted(false)}
+              onChange={(e) => {
+                const text = e.nativeEvent.text;
+                setCompany(text);
+                setFieldChanged(true);
+              }}
+              value={company}
             />
           </View>
           <View style={styles.infoWrapper}>
@@ -195,8 +234,12 @@ export default function SupplierDetailScreen({
               textContentType="telephoneNumber"
               onFocus={() => setPhoneIsHighlighted(true)}
               onBlur={() => setPhoneIsHighlighted(false)}
-              onChange={() => setFieldChanged(true)}
-              ref={phoneInputRef}
+              onChange={(e) => {
+                const text = e.nativeEvent.text;
+                setPhone(text);
+                setFieldChanged(true);
+              }}
+              value={phone}
             />
           </View>
           <View style={styles.infoWrapper}>
@@ -245,10 +288,9 @@ export default function SupplierDetailScreen({
                   defaultValue="2"
                   keyboardType="number-pad"
                   clearTextOnFocus
-                  onSubmitEditing={(e) => {
+                  onEndEditing={(e) => {
                     if (!(Number(e.nativeEvent.text) > 1)) setCustomDate(false);
                   }}
-                  ref={weeksInputRef}
                 />
                 <Text style={{ fontSize: 18 }}>semanas</Text>
               </View>
@@ -272,23 +314,12 @@ export default function SupplierDetailScreen({
             style={[
               styles.button,
               {
-                borderColor:
-                  !fieldChaged ||
-                  deliveryDays.filter((day) => day.selected).length == 0
-                    ? '#c0c0c0'
-                    : '#07f',
-                backgroundColor:
-                  !fieldChaged ||
-                  deliveryDays.filter((day) => day.selected).length == 0
-                    ? '#c0c0c020'
-                    : '#0077ff20',
+                borderColor: isInvalid ? '#c0c0c0' : '#07f',
+                backgroundColor: isInvalid ? '#c0c0c020' : '#0077ff20',
               },
             ]}
             onPress={confirmToSave}
-            disabled={
-              !fieldChaged ||
-              deliveryDays.filter((day) => day.selected).length == 0
-            }
+            disabled={isInvalid}
           >
             <Text style={styles.buttonText}>Salvar alterações</Text>
           </TouchableOpacity>

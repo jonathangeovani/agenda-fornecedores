@@ -81,7 +81,10 @@ export default function SupplierListScreen({
                       });
                     }}
                   >
-                    <Text style={styles.supplierText}>{supplier.name}</Text>
+                    <Text style={styles.supplierName}>{supplier.name}</Text>
+                    <Text style={styles.supplierCompany}>
+                      {supplier.company}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -120,7 +123,12 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
   },
-  supplierText: {
+  supplierName: {
     fontSize: 20,
+  },
+  supplierCompany: {
+    paddingTop: 4,
+    color: '#7b7b7b',
+    fontSize: 14,
   },
 });

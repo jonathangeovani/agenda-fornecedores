@@ -55,6 +55,7 @@ export default function SupplierDetailScreen({
   const [supplierDetails, setSupplierDetails] = useState({
     id: _.uniqueId(),
     name: '',
+    company: '',
     phone: '',
     date: new Date(),
   });
@@ -97,11 +98,14 @@ export default function SupplierDetailScreen({
     },
   ];
 
-  const [nameInput, setNameInput] = useState<string>('');
-  const [phoneInput, setPhoneInput] = useState<string>('');
-  const [weekInput, setWeekInput] = useState<string>('');
+  const [name, setName] = useState<string>('');
+  const [company, setCompany] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [week, setWeek] = useState<string>('2');
 
   const [nameIsHighlighted, setNameIsHighlighted] = useState<boolean>(false);
+  const [companyIsHighlighted, setCompanyIsHighlighted] =
+    useState<boolean>(false);
   const [phoneIsHighlighted, setPhoneIsHighlighted] = useState<boolean>(false);
   const [customDate, setCustomDate] = useState<boolean>(false);
   const [isImportant, setIsImportant] = useState<boolean>(false);
@@ -123,7 +127,7 @@ export default function SupplierDetailScreen({
   }, []);
 
   const infoSaved = () => {
-    Alert.alert('Novo cadastro adicionado!', '', [
+    Alert.alert(name + ' adicionado!', '', [
       {
         text: 'OK',
         onPress: () => navigation.goBack(),
@@ -134,10 +138,10 @@ export default function SupplierDetailScreen({
 
   useEffect(() => {
     const emptyFields =
-      supplierDetails.name.length == 0 ||
+      (!supplierDetails.name && !supplierDetails.company) ||
       deliveryDays.filter((day) => day.selected).length == 0;
     setIsInvalid(emptyFields);
-  }, [nameInput, deliveryDays]);
+  }, [name, company, deliveryDays]);
 
   return (
     <ScrollView>
@@ -154,7 +158,6 @@ export default function SupplierDetailScreen({
                 },
               ]}
               placeholder="Nome"
-              defaultValue={supplierDetails.name}
               clearButtonMode="while-editing"
               textContentType="name"
               onFocus={() => setNameIsHighlighted(true)}
@@ -163,9 +166,33 @@ export default function SupplierDetailScreen({
                 const text = e.nativeEvent.text;
                 supplierDetails.name = text;
                 setSupplierDetails(supplierDetails);
-                setNameInput(text);
+                setName(text);
               }}
-              value={nameInput}
+              value={name}
+            />
+          </View>
+          <View style={styles.infoWrapper}>
+            <Text>Empresa:</Text>
+            <TextInput
+              style={[
+                styles.supplierInfo,
+                styles.textInput,
+                {
+                  borderBottomColor: companyIsHighlighted ? '#777' : '#ccc',
+                },
+              ]}
+              placeholder="Nome"
+              clearButtonMode="while-editing"
+              textContentType="organizationName"
+              onFocus={() => setCompanyIsHighlighted(true)}
+              onBlur={() => setCompanyIsHighlighted(false)}
+              onChange={(e) => {
+                const text = e.nativeEvent.text;
+                supplierDetails.company = text;
+                setSupplierDetails(supplierDetails);
+                setCompany(text);
+              }}
+              value={company}
             />
           </View>
           <View style={styles.infoWrapper}>
@@ -179,7 +206,6 @@ export default function SupplierDetailScreen({
                 },
               ]}
               placeholder="Telefone"
-              defaultValue={supplierDetails.phone}
               clearButtonMode="while-editing"
               keyboardType="numbers-and-punctuation"
               textContentType="telephoneNumber"
@@ -189,9 +215,9 @@ export default function SupplierDetailScreen({
                 const text = e.nativeEvent.text;
                 supplierDetails.phone = text;
                 setSupplierDetails(supplierDetails);
-                setPhoneInput(text);
+                setPhone(text);
               }}
-              value={phoneInput}
+              value={phone}
             />
           </View>
           <View style={styles.infoWrapper}>
@@ -238,17 +264,16 @@ export default function SupplierDetailScreen({
                     paddingHorizontal: 10,
                     borderBottomWidth: 1,
                   }}
-                  defaultValue="2"
                   keyboardType="number-pad"
                   clearTextOnFocus
-                  onSubmitEditing={(e) => {
+                  onEndEditing={(e) => {
                     if (!(Number(e.nativeEvent.text) > 1)) setCustomDate(false);
                   }}
                   onChange={(e) => {
                     const num = e.nativeEvent.text;
-                    setWeekInput(num);
+                    setWeek(num);
                   }}
-                  value={weekInput}
+                  value={week}
                 />
                 <Text style={{ fontSize: 18 }}>semanas</Text>
               </View>
