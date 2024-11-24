@@ -28,13 +28,15 @@ export default function SupplierListScreen({
 
   const scrollRef = useRef<ScrollView>(null);
   const [groupRef, setGroupRef] = useState<number[]>([]);
-  const [supplierRef, setSupplierRef] = useState<{ name: string; y: number }[]>(
-    []
-  );
+  const [supplierRef, setSupplierRef] = useState<
+    { name: string; company: string; y: number }[]
+  >([]);
 
   const handleScroll = (text: string) => {
     if (!text || !text.trim()) return;
-    const scrollToItem = supplierRef.filter((s) => s.name.includes(text))[0];
+    const scrollToItem = supplierRef.filter(
+      (s) => s.name.includes(text) || s.company.includes(text)
+    )[0];
     const itemOffset = scrollToItem ? scrollToItem.y : 0;
     scrollRef.current?.scrollTo({
       y: itemOffset,
@@ -71,6 +73,7 @@ export default function SupplierListScreen({
                       const layout = e.nativeEvent.layout;
                       supplierRef.push({
                         name: supplier.name,
+                        company: supplier.company,
                         y: groupRef[idx] + layout.y,
                       });
                       setSupplierRef(supplierRef);

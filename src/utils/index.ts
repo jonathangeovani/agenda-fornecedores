@@ -4,6 +4,7 @@ const nameSchema = Bp.names.fullName();
 const companySchema = Bp.company.name();
 const phoneSchema = Bp.phone.number('(!#) 9####-####');
 const dateSchema = Bp.date.between('2024-11-12', '2024-12-07');
+const importanceSchema = Bp.datatype.boolean();
 
 const supplierSchema = Bp.object({
   id: Bp.datatype.uuid(),
@@ -11,6 +12,7 @@ const supplierSchema = Bp.object({
   company: companySchema,
   phone: phoneSchema,
   date: dateSchema,
+  isImportant: importanceSchema,
 });
 
 const supplierCollectionSchema = Bp.array({

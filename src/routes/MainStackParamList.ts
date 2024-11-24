@@ -14,6 +14,7 @@ type SupplierDetailParams = {
 export type MainStackParamList = {
   Home: undefined;
   Agenda: AgendaParams;
+  ImportantSuppliers: undefined;
   SupplierList: SupplierListParams;
   SupplierDetail: SupplierDetailParams;
   AddSupplier: undefined;

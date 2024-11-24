@@ -6,6 +6,7 @@ import SupplierListScreen from '../screens/SupplierListScreen';
 import SupplierDetailScreen from '../screens/SupplierDetailScreen';
 import { Image } from 'react-native';
 import AddSupplierScreen from '../screens/AddSupplierScreen';
+import ImportantSuppliersScreen from '../screens/ImportantSuppliersScreen';
 
 const MainStack = () => {
   const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -18,6 +19,11 @@ const MainStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="Agenda" component={AgendaScreen} />
+      <Stack.Screen
+        name="ImportantSuppliers"
+        component={ImportantSuppliersScreen}
+        options={{ title: 'Importantes da semana' }}
+      />
       <Stack.Screen
         name="SupplierList"
         component={SupplierListScreen}

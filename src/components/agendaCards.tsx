@@ -1,32 +1,12 @@
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { supplierCollection } from '../utils';
-import { formatDate } from '../utils/date';
+import { formatDate, getWeekDays } from '../utils/date';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { MainStackParamList } from '../routes/MainStackParamList';
-import {
-  addDays,
-  addWeeks,
-  eachDayOfInterval,
-  eachWeekOfInterval,
-  subWeeks,
-} from 'date-fns';
 
 const getDayQtd = (day: number): number => {
   return supplierCollection.filter((supplier) => supplier.date.getDate() == day)
     .length;
-};
-
-const getWeekDays = (day: Date) => {
-  const weekInterval = eachWeekOfInterval({
-    start: subWeeks(day, 0),
-    end: addWeeks(day, 0),
-  });
-  const weekDays = weekInterval.map((start) => {
-    return eachDayOfInterval({ start, end: addDays(start, 6) })
-      .map(formatDate)
-      .map((date) => date.str);
-  });
-  return weekDays[0];
 };
 
 export default function AgendaCards() {
@@ -34,10 +14,13 @@ export default function AgendaCards() {
 
   const today = new Date();
   const todayDate = today.getDate();
-
   const todayQtd = getDayQtd(todayDate);
   const tomorowQtd = getDayQtd(todayDate + 1);
   const thisWeek = getWeekDays(today);
+  const importantQtd = supplierCollection.filter(
+    (supplier) =>
+      supplier.isImportant && thisWeek.includes(formatDate(supplier.date).str)
+  ).length;
   const weekQtd = supplierCollection.filter((supplier) =>
     thisWeek.includes(formatDate(supplier.date).str)
   ).length;
@@ -70,9 +53,9 @@ export default function AgendaCards() {
     },
     {
       name: 'Importantes',
-      qtd: 0,
+      qtd: importantQtd,
       imgUrl: 'https://cdn-icons-png.flaticon.com/512/10308/10308557.png',
-      action: () => console.log('SupplierListScreen'),
+      action: () => navigation.navigate('ImportantSuppliers'),
     },
   ];
 
