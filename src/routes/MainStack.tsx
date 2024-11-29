@@ -21,7 +21,7 @@ const MainStack = () => {
       <Stack.Screen
         name="ImportantSuppliers"
         component={ImportantSuppliersScreen}
-        options={{ title: 'Importantes da semana' }}
+        options={{ title: 'Entregas importantes hoje' }}
       />
       <Stack.Screen
         name="SupplierList"

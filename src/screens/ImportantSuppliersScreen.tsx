@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { getWeekDays } from '../utils/date';
+import { formatDate } from '../utils/date';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../routes/MainStackParamList';
 import { SupplierData, useSupplierDatabase } from '../db/useSupplierDatabase';
@@ -18,11 +18,16 @@ export default function ImportantSuppliersScreen({
 }: ImportantSuppliersScreenProp) {
   const suppliersDb = useSupplierDatabase();
   const [suppliers, setSuppliers] = useState<SupplierData[]>();
-  const importantSuppliers = suppliers;
+  const today = new Date();
+  const todayDate = formatDate(today).long;
 
   const getImportantSuppliers = async () => {
     const response = await suppliersDb.getAllSuppliers(true);
-    setSuppliers(response.filter((supplier) => supplier.isImportant));
+    setSuppliers(
+      response.filter(
+        (supplier) => supplier.isImportant && supplier.days.includes(todayDate)
+      )
+    );
   };
 
   useEffect(() => {
@@ -38,7 +43,7 @@ export default function ImportantSuppliersScreen({
       }}
     >
       <View style={styles.container}>
-        {importantSuppliers?.map((supplier) => {
+        {suppliers?.map((supplier) => {
           const supplierDayOffset = 1;
           return (
             <TouchableOpacity
