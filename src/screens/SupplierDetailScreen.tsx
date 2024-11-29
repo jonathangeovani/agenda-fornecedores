@@ -222,7 +222,6 @@ export default function SupplierDetailScreen({
                 const text = e.nativeEvent.text;
                 setPhone(text);
                 setFieldChanged(true);
-                console.log(fieldChaged);
               }}
               value={phone}
             />
