@@ -23,7 +23,7 @@ export default function AgendaCards() {
   ).length;
   const thisWeek = getWeekDaysFormated(today);
   const importantQtd = suppliers.filter(
-    (supplier) => supplier.isImportant
+    (supplier) => supplier.isImportant && supplier.days.includes(todayDay)
   ).length;
   const todayIdx = thisWeek.indexOf(todayDay);
   const tomorowIdx = thisWeek.includes(tomorowDay) ? todayIdx + 1 : 0;
