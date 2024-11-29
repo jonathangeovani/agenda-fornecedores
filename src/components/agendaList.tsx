@@ -8,7 +8,6 @@ import {
   eachWeekOfInterval,
   subWeeks,
 } from 'date-fns';
-import { SupplierData } from '../db/useSupplierDatabase';
 
 interface IAgendaProps<SupplierData> {
   pastWeeks?: number;

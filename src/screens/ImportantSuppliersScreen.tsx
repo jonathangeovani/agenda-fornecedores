@@ -50,7 +50,7 @@ export default function ImportantSuppliersScreen({
             >
               <Text style={[styles.text, styles.name]}>{supplier.name}</Text>
               <Text style={[styles.text, styles.company]}>
-                {supplier.company}
+                {supplier.company || 'Sem empresa'}
               </Text>
               <Text style={[styles.text, styles.date]}>
                 {supplier.days.join(', ')}

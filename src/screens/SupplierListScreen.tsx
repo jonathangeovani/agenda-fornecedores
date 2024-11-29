@@ -104,7 +104,7 @@ export default function SupplierListScreen({
                   >
                     <Text style={styles.supplierName}>{supplier.name}</Text>
                     <Text style={styles.supplierCompany}>
-                      {supplier.company}
+                      {supplier.company || 'Sem empresa'}
                     </Text>
                   </TouchableOpacity>
                 );
