@@ -17,15 +17,22 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "icon": "./assets/icon.png",
+      "package": "com.jonathan_geovani.agendafornecedores"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-sqlite"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a42bcd9f-6bfa-43b9-baea-91580731730c"
+      }
+    }
   }
 }
