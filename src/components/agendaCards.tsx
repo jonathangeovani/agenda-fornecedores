@@ -32,13 +32,25 @@ export default function AgendaCards() {
     {
       name: 'Hoje',
       qtd: todayQtd,
-      imgUrl: 'https://cdn-icons-png.flaticon.com/512/1048/1048140.png',
+      imgUrl: (
+        <Image
+          width={40}
+          height={40}
+          source={require('../../assets/icons/calendar.png')}
+        />
+      ),
       action: () => navigation.navigate('Agenda', { dayOffset: todayIdx }),
     },
     {
       name: 'Amanhã',
       qtd: tomorowQtd,
-      imgUrl: 'https://cdn-icons-png.flaticon.com/512/1028/1028157.png',
+      imgUrl: (
+        <Image
+          width={40}
+          height={40}
+          source={require('../../assets/icons/calendar-schedule.png')}
+        />
+      ),
       action: () =>
         navigation.navigate('Agenda', {
           weekOffset: tomorowIdx ? 1 : 2,
@@ -48,7 +60,13 @@ export default function AgendaCards() {
     {
       name: 'Entregas importantes hoje',
       qtd: importantQtd,
-      imgUrl: 'https://cdn-icons-png.flaticon.com/512/4367/4367522.png',
+      imgUrl: (
+        <Image
+          width={40}
+          height={40}
+          source={require('../../assets/icons/calendar-star.png')}
+        />
+      ),
       action: () => navigation.navigate('ImportantSuppliers'),
     },
   ];
@@ -100,7 +118,7 @@ export default function AgendaCards() {
                     justifyContent: 'space-between',
                   }}
                 >
-                  <Image width={40} height={40} source={{ uri: item.imgUrl }} />
+                  {item.imgUrl}
                   <Text style={{ fontSize: 20, fontWeight: 600 }}>
                     {item.qtd}
                   </Text>

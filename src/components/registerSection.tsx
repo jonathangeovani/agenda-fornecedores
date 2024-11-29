@@ -26,9 +26,7 @@ export default function RegisterSection() {
               <Image
                 width={24}
                 height={24}
-                source={{
-                  uri: 'https://cdn-icons-png.freepik.com/256/4315/4315609.png',
-                }}
+                source={require('../../assets/icons/add.png')}
               />
               <Text style={{ fontSize: 16, fontWeight: 500 }}>
                 Adicionar novo
@@ -51,9 +49,7 @@ export default function RegisterSection() {
               <Image
                 width={24}
                 height={24}
-                source={{
-                  uri: 'https://cdn-icons-png.flaticon.com/512/9385/9385289.png',
-                }}
+                source={require('../../assets/icons/user.png')}
               />
               <Text style={{ fontSize: 16, fontWeight: 500 }}>Ver todos</Text>
             </View>
