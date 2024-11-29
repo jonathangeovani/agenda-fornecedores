@@ -10,107 +10,40 @@ import {
   ScrollView,
 } from 'react-native';
 import { MainStackParamList } from '../routes/MainStackParamList';
-import { supplierCollection } from '../utils';
-import _ from 'lodash';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useSupplierDatabase } from '../db/useSupplierDatabase';
+import { DAYS } from '../constants';
+import { Checkbox } from '../components/checkbox';
 
 type AddSupplierScreenProp = NativeStackScreenProps<MainStackParamList>;
-
-type CheckboxProps = {
-  day: string;
-  checked: boolean;
-  onPress: () => void;
-};
-
-const Checkbox = ({ day, checked, onPress }: CheckboxProps) => {
-  return (
-    <TouchableOpacity
-      style={{
-        marginHorizontal: 5,
-        marginVertical: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 10,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: checked ? '#0c0' : '#ccc',
-        backgroundColor: checked ? '#00cc0012' : undefined,
-      }}
-      onPress={onPress}
-    >
-      <Text
-        style={{
-          fontSize: 16,
-          fontWeight: checked ? 500 : 400,
-        }}
-      >
-        {day}
-      </Text>
-    </TouchableOpacity>
-  );
-};
 
 export default function SupplierDetailScreen({
   navigation,
 }: AddSupplierScreenProp) {
   const [supplierDetails, setSupplierDetails] = useState({
-    id: _.uniqueId(),
     name: '',
     company: '',
     phone: '',
-    date: new Date(),
+    isImportant: false,
+    days: [],
   });
 
-  const days = [
-    {
-      id: 0,
-      name: 'Segunda-feira',
-      selected: false,
-    },
-    {
-      id: 1,
-      name: 'Terça-feira',
-      selected: false,
-    },
-    {
-      id: 2,
-      name: 'Quarta-feira',
-      selected: false,
-    },
-    {
-      id: 3,
-      name: 'Quinta-feira',
-      selected: false,
-    },
-    {
-      id: 4,
-      name: 'Sexta-feira',
-      selected: false,
-    },
-    {
-      id: 5,
-      name: 'Sábado',
-      selected: false,
-    },
-    {
-      id: 6,
-      name: 'Domingo',
-      selected: false,
-    },
-  ];
+  const weekDays = DAYS.map((day, idx) => {
+    return { id: idx, name: day, selected: false };
+  });
 
-  const [name, setName] = useState<string>('');
-  const [company, setCompany] = useState<string>('');
-  const [phone, setPhone] = useState<string>('');
-  const [week, setWeek] = useState<string>('2');
+  const suppliersDb = useSupplierDatabase();
 
-  const [nameIsHighlighted, setNameIsHighlighted] = useState<boolean>(false);
-  const [companyIsHighlighted, setCompanyIsHighlighted] =
-    useState<boolean>(false);
-  const [phoneIsHighlighted, setPhoneIsHighlighted] = useState<boolean>(false);
-  const [customDate, setCustomDate] = useState<boolean>(false);
-  const [isImportant, setIsImportant] = useState<boolean>(false);
-  const [deliveryDays, setDeliveryDays] = useState(days);
-  const [isInvalid, setIsInvalid] = useState<boolean>(true);
+  const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [phone, setPhone] = useState('');
+  const [deliveryDays, setDeliveryDays] = useState(weekDays);
+
+  const [nameIsHighlighted, setNameIsHighlighted] = useState(false);
+  const [companyIsHighlighted, setCompanyIsHighlighted] = useState(false);
+  const [phoneIsHighlighted, setPhoneIsHighlighted] = useState(false);
+  const [isImportant, setIsImportant] = useState(false);
+  const [isInvalid, setIsInvalid] = useState(true);
 
   const toggleDay = useCallback((id: number) => {
     setDeliveryDays((prevDeliveryDays) => {
@@ -126,14 +59,41 @@ export default function SupplierDetailScreen({
     });
   }, []);
 
-  const infoSaved = () => {
-    Alert.alert(name + ' adicionado!', '', [
-      {
-        text: 'OK',
-        onPress: () => navigation.goBack(),
-        style: 'default',
-      },
-    ]);
+  const addNewSupplier = async () => {
+    try {
+      const supplierDays = deliveryDays
+        .filter((day) => day.selected)
+        .map((days) => days.name);
+
+      const supplierData = {
+        name,
+        company,
+        phone,
+        isImportant,
+        days: supplierDays,
+      };
+
+      await suppliersDb.addSupplier(supplierData);
+
+      Alert.alert('Sucesso', `Fornecedor ${name} adicionado com sucesso!`, [
+        {
+          text: 'OK',
+          onPress: () => navigation.goBack(),
+          style: 'default',
+        },
+      ]);
+    } catch (error) {
+      Alert.alert(
+        'Erro',
+        `Não foi possível adicionar o fornecedor!\nErro: ${error}`,
+        [
+          {
+            text: 'Tentar novamente',
+            style: 'default',
+          },
+        ]
+      );
+    }
   };
 
   useEffect(() => {
@@ -227,7 +187,7 @@ export default function SupplierDetailScreen({
                 return (
                   <Checkbox
                     key={day.id}
-                    day={day.name}
+                    text={day.name}
                     checked={day.selected}
                     onPress={() => {
                       toggleDay(day.id);
@@ -236,48 +196,6 @@ export default function SupplierDetailScreen({
                 );
               })}
             </ScrollView>
-            <View style={styles.switchWrapper}>
-              <Text style={{ flex: 1, fontSize: 18 }}>
-                Entrega toda semana:
-              </Text>
-              <Switch
-                onChange={() => {
-                  setCustomDate((oldValue) => !oldValue);
-                }}
-                value={!customDate}
-              />
-            </View>
-            {customDate && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                }}
-              >
-                <Text style={{ fontSize: 18 }}>Entrega a cada:</Text>
-                <TextInput
-                  style={{
-                    fontSize: 20,
-                    marginHorizontal: 8,
-                    paddingVertical: 4,
-                    paddingHorizontal: 10,
-                    borderBottomWidth: 1,
-                  }}
-                  keyboardType="number-pad"
-                  clearTextOnFocus
-                  onEndEditing={(e) => {
-                    if (!(Number(e.nativeEvent.text) > 1)) setCustomDate(false);
-                  }}
-                  onChange={(e) => {
-                    const num = e.nativeEvent.text;
-                    setWeek(num);
-                  }}
-                  value={week}
-                />
-                <Text style={{ fontSize: 18 }}>semanas</Text>
-              </View>
-            )}
             <View style={styles.switchWrapper}>
               <Text style={{ flex: 1, fontSize: 18 }}>
                 Marcar como importante:
@@ -300,7 +218,7 @@ export default function SupplierDetailScreen({
                 backgroundColor: isInvalid ? '#c0c0c020' : '#0077ff20',
               },
             ]}
-            onPress={infoSaved}
+            onPress={addNewSupplier}
             disabled={isInvalid}
           >
             <Text style={styles.buttonText}>Adicionar novo fornecedor</Text>

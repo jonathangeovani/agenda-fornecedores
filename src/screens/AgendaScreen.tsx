@@ -7,17 +7,16 @@ import {
   Image,
 } from 'react-native';
 import AgendaList from '../components/agendaList';
-import { format } from 'date-fns';
 import _ from 'lodash';
-import { supplierCollection } from '../utils';
 import { MainStackParamList } from '../routes/MainStackParamList';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SupplierData, useSupplierDatabase } from '../db/useSupplierDatabase';
+import { useEffect, useState } from 'react';
+import { DAYS } from '../constants';
 
 type AgendaScreenProps = NativeStackScreenProps<MainStackParamList, 'Agenda'>;
 
-const ScheduleItem: React.FC<{ data: (typeof supplierCollection)[number] }> = ({
-  data,
-}) => {
+const ScheduleItem: React.FC<{ data: SupplierData }> = ({ data }) => {
   return (
     <TouchableOpacity
       onPress={() => Linking.openURL(`tel:${data.phone.replaceAll(/\D/g, '')}`)}
@@ -41,9 +40,32 @@ const ScheduleItem: React.FC<{ data: (typeof supplierCollection)[number] }> = ({
 };
 
 export default function AgendaScreen({ route, navigation }: AgendaScreenProps) {
-  const data = _.groupBy(supplierCollection, (supplier) =>
-    format(supplier.date, 'dd-MM-yyyy')
+  const supplierDb = useSupplierDatabase();
+  const [suppliers, setSuppliers] = useState<SupplierData[]>();
+  const data: Map<string, SupplierData[] | undefined> = new Map(
+    DAYS.map((day) => {
+      const daySuppliers = suppliers?.filter((supplier) =>
+        supplier.days.includes(day)
+      );
+      if (daySuppliers && daySuppliers.length > 0) return [day, daySuppliers];
+      else return ['', []];
+    })
   );
+
+  const getSuppliers = async () => {
+    try {
+      const response = await supplierDb.getAllSuppliers();
+      setSuppliers(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const listener = navigation.addListener('focus', getSuppliers);
+
+    return listener;
+  }, [navigation]);
 
   return (
     <AgendaList

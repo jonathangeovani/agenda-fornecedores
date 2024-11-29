@@ -8,24 +8,25 @@ import {
   eachWeekOfInterval,
   subWeeks,
 } from 'date-fns';
+import { SupplierData } from '../db/useSupplierDatabase';
 
-interface IAgendaProps<DataItem extends any> {
+interface IAgendaProps<SupplierData> {
   pastWeeks?: number;
   futureWeeks?: number;
-  data: Record<string, DataItem[]>;
-  keyExtractor: (item: DataItem) => any;
-  renderItem(item: DataItem): JSX.Element;
+  data: Map<string, SupplierData[] | undefined>;
+  keyExtractor: (item: SupplierData) => any;
+  renderItem(item: SupplierData): JSX.Element;
   weekOffset?: number;
   dayOffset?: number;
 }
 
-export default function AgendaList<DataItem>({
+export default function AgendaList<SupplierData>({
   pastWeeks = 1,
   futureWeeks = 1,
   weekOffset = 1,
   dayOffset = 0,
   ...props
-}: IAgendaProps<DataItem>) {
+}: IAgendaProps<SupplierData>) {
   const [calendarWidth, setCalendarWidth] = useState<number>(0);
   const [agendaListWidth, setAgendaListWidth] = useState<number>(0);
 
@@ -51,7 +52,6 @@ export default function AgendaList<DataItem>({
     return weeks;
   }, [pastWeeks, futureWeeks]);
 
-  const highlightedDays = useMemo(() => Object.keys(props.data), [props.data]);
   const [agendaDaysOffset, setAgendaDaysOffset] = useState<number[][]>([
     [],
     [],
@@ -94,7 +94,7 @@ export default function AgendaList<DataItem>({
                 style={[styles.weekWrapper, { width: calendarWidth }]}
               >
                 {calendarWeek.map((day) => {
-                  const isHighlighted = highlightedDays.includes(day.str);
+                  const isHighlighted = props.data.has(day.long);
                   const color = isHighlighted ? '#000' : '#909090';
                   const fontWeight = isHighlighted ? 600 : 400;
 
@@ -163,7 +163,7 @@ export default function AgendaList<DataItem>({
                 }}
               >
                 {agendaWeek.map((day, dayIdx) => {
-                  const isHighlighted = highlightedDays.includes(day.str);
+                  const isHighlighted = props.data.has(day.long);
                   const backgroundColor = isHighlighted ? '#f7f7ff' : '#fff';
                   return (
                     <View
@@ -186,13 +186,12 @@ export default function AgendaList<DataItem>({
                         ]}
                       >
                         <View style={agendaStyles.dayContent}>
-                          {props.data[day.str] &&
-                            props.data[day.str].map((item) => {
-                              const ScheduleItem = () => props.renderItem(item);
-                              return (
-                                <ScheduleItem key={props.keyExtractor(item)} />
-                              );
-                            })}
+                          {props.data.get(day.long)?.map((item) => {
+                            const ScheduleItem = () => props.renderItem(item);
+                            return (
+                              <ScheduleItem key={props.keyExtractor(item)} />
+                            );
+                          })}
                         </View>
                       </View>
                     </View>

@@ -8,7 +8,7 @@ type SupplierListParams = {
 };
 
 type SupplierDetailParams = {
-  id: string;
+  id: number;
 };
 
 export type MainStackParamList = {

@@ -7,10 +7,10 @@ import {
   View,
 } from 'react-native';
 import { MainStackParamList } from '../routes/MainStackParamList';
-import { supplierCollection } from '../utils';
 import _ from 'lodash';
 import SearchInput from '../components/searchInput';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { SupplierData, useSupplierDatabase } from '../db/useSupplierDatabase';
 
 type SupplierListScreenProps = NativeStackScreenProps<
   MainStackParamList,
@@ -21,11 +21,15 @@ export default function SupplierListScreen({
   route,
   navigation,
 }: SupplierListScreenProps) {
+  const suppliersDb = useSupplierDatabase();
+  const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
+
   const groupedSuppliers = useMemo(
-    () => _.groupBy(supplierCollection, (supplier) => supplier.name[0]),
-    [supplierCollection]
+    () => _.groupBy(suppliers, (supplier) => supplier.name[0]),
+    [suppliers]
   );
 
+  const [search, setSearch] = useState(route.params.initialText || '');
   const scrollRef = useRef<ScrollView>(null);
   const [groupRef, setGroupRef] = useState<number[]>([]);
   const [supplierRef, setSupplierRef] = useState<
@@ -43,14 +47,28 @@ export default function SupplierListScreen({
     });
   };
 
+  const searchSuppliers = async () => {
+    try {
+      const response = await suppliersDb.searchSuppliers(search);
+      if (response) setSuppliers(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    return navigation.addListener('focus', searchSuppliers);
+  }, [navigation]);
+
   return (
     <View style={styles.container}>
       <SearchInput
-        submitAction={(e) => {
+        onChange={(e) => {
           const text = e.nativeEvent.text;
-          handleScroll(text);
+          setSearch(text);
         }}
-        defaultText={route.params.initialText}
+        value={search}
+        submitAction={() => searchSuppliers()}
       />
       <ScrollView ref={scrollRef}>
         {Object.keys(groupedSuppliers).map((letter, idx) => {

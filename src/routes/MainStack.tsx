@@ -4,7 +4,6 @@ import AgendaScreen from '../screens/AgendaScreen';
 import { MainStackParamList } from './MainStackParamList';
 import SupplierListScreen from '../screens/SupplierListScreen';
 import SupplierDetailScreen from '../screens/SupplierDetailScreen';
-import { Image } from 'react-native';
 import AddSupplierScreen from '../screens/AddSupplierScreen';
 import ImportantSuppliersScreen from '../screens/ImportantSuppliersScreen';
 

@@ -1,39 +1,39 @@
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { supplierCollection } from '../utils';
-import { formatDate, getWeekDays } from '../utils/date';
+import { formatDate, getWeekDaysFormated } from '../utils/date';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { MainStackParamList } from '../routes/MainStackParamList';
-
-const getDayQtd = (day: number): number => {
-  return supplierCollection.filter((supplier) => supplier.date.getDate() == day)
-    .length;
-};
+import { SupplierData, useSupplierDatabase } from '../db/useSupplierDatabase';
+import { useEffect, useState } from 'react';
+import { addDays } from 'date-fns';
 
 export default function AgendaCards() {
   const navigation = useNavigation<NavigationProp<MainStackParamList>>();
 
+  const suppliersDb = useSupplierDatabase();
+  const [suppliers, setSuppliers] = useState<SupplierData[]>([]);
+
   const today = new Date();
-  const todayDate = today.getDate();
-  const todayQtd = getDayQtd(todayDate);
-  const tomorowQtd = getDayQtd(todayDate + 1);
-  const thisWeek = getWeekDays(today);
-  const importantQtd = supplierCollection.filter(
-    (supplier) =>
-      supplier.isImportant && thisWeek.includes(formatDate(supplier.date).str)
+  const todayDay = formatDate(today).long;
+  const tomorowDay = formatDate(addDays(today, 1)).long;
+  const todayQtd = suppliers.filter((supplier) =>
+    supplier.days.includes(todayDay)
   ).length;
-  const weekQtd = supplierCollection.filter((supplier) =>
-    thisWeek.includes(formatDate(supplier.date).str)
+  const tomorowQtd = suppliers.filter((supplier) =>
+    supplier.days.includes(tomorowDay)
   ).length;
-  const todayIdx = thisWeek.indexOf(formatDate(today).str);
-  const tomorowIdx = todayIdx + 1 < thisWeek.length ? todayIdx + 1 : 0;
+  const thisWeek = getWeekDaysFormated(today);
+  const importantQtd = suppliers.filter(
+    (supplier) => supplier.isImportant
+  ).length;
+  const todayIdx = thisWeek.indexOf(todayDay);
+  const tomorowIdx = thisWeek.includes(tomorowDay) ? todayIdx + 1 : 0;
 
   const cards = [
     {
       name: 'Hoje',
       qtd: todayQtd,
       imgUrl: 'https://cdn-icons-png.flaticon.com/512/1048/1048140.png',
-      action: () =>
-        navigation.navigate('Agenda', { weekOffset: 1, dayOffset: todayIdx }),
+      action: () => navigation.navigate('Agenda', { dayOffset: todayIdx }),
     },
     {
       name: 'Amanhã',
@@ -46,22 +46,44 @@ export default function AgendaCards() {
         }),
     },
     {
-      name: 'Semana',
-      qtd: weekQtd,
-      imgUrl: 'https://cdn-icons-png.flaticon.com/512/694/694758.png',
-      action: () => navigation.navigate('Agenda', { weekOffset: 1 }),
-    },
-    {
-      name: 'Importantes',
+      name: 'Entregas importantes hoje',
       qtd: importantQtd,
-      imgUrl: 'https://cdn-icons-png.flaticon.com/512/10308/10308557.png',
+      imgUrl: 'https://cdn-icons-png.flaticon.com/512/4367/4367522.png',
       action: () => navigation.navigate('ImportantSuppliers'),
     },
   ];
 
+  async function getSuppliers() {
+    try {
+      const response = await suppliersDb.getAllSuppliers();
+      setSuppliers(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    const listener = navigation.addListener('focus', getSuppliers);
+
+    return listener;
+  }, [navigation]);
+
   return (
     <View style={styles.container}>
-      <Text style={{ fontSize: 18, fontWeight: 600 }}>Entregas na semana</Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+        }}
+      >
+        <Text style={{ fontSize: 18, fontWeight: 600 }}>
+          Entregas na semana
+        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Agenda', {})}>
+          <Text style={{ color: '#07f' }}>ver agenda</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.cardsWrapper}>
         {cards.map((item) => {
           return (

@@ -3,23 +3,20 @@ import {
   View,
   TextInput,
   StyleSheet,
-  Image,
-  TouchableOpacity,
   NativeSyntheticEvent,
   TextInputSubmitEditingEventData,
-  LayoutChangeEvent,
+  TextInputProps,
 } from 'react-native';
 
-type SearchInputProps = {
-  submitAction: (
+type SearchInputProps = TextInputProps & {
+  submitAction?: (
     event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
   ) => void;
-  defaultText?: string;
 };
 
 export default function SearchInput({
   submitAction,
-  defaultText = '',
+  ...props
 }: SearchInputProps) {
   const searchInput = useRef<TextInput>(null);
   const [searchFocused, setSearchFocused] = useState<Boolean>(false);
@@ -37,9 +34,9 @@ export default function SearchInput({
         onBlur={() => setSearchFocused(false)}
         onFocus={() => setSearchFocused(true)}
         onSubmitEditing={submitAction}
-        defaultValue={defaultText}
         clearButtonMode="while-editing"
         clearTextOnFocus
+        {...props}
         ref={searchInput}
       />
     </View>

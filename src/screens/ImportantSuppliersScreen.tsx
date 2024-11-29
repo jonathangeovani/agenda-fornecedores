@@ -5,25 +5,31 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { formatDate, getWeekDays } from '../utils/date';
-import { supplierCollection } from '../utils';
+import { getWeekDays } from '../utils/date';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../routes/MainStackParamList';
+import { SupplierData, useSupplierDatabase } from '../db/useSupplierDatabase';
+import { useEffect, useState } from 'react';
 
 type ImportantSuppliersScreenProp = NativeStackScreenProps<MainStackParamList>;
 
 export default function ImportantSuppliersScreen({
   navigation,
 }: ImportantSuppliersScreenProp) {
-  const weekDays = getWeekDays(new Date());
-  const importantSuppliers = supplierCollection
-    .filter(
-      (supplier) =>
-        supplier.isImportant && weekDays.includes(formatDate(supplier.date).str)
-    )
-    .sort((a, b) => {
-      return formatDate(a.date).number > formatDate(b.date).number ? 1 : -1;
-    });
+  const suppliersDb = useSupplierDatabase();
+  const [suppliers, setSuppliers] = useState<SupplierData[]>();
+  const importantSuppliers = suppliers;
+
+  const getImportantSuppliers = async () => {
+    const response = await suppliersDb.getAllSuppliers(true);
+    setSuppliers(response.filter((supplier) => supplier.isImportant));
+  };
+
+  useEffect(() => {
+    getImportantSuppliers();
+
+    return () => {};
+  }, []);
 
   return (
     <ScrollView
@@ -32,10 +38,8 @@ export default function ImportantSuppliersScreen({
       }}
     >
       <View style={styles.container}>
-        {importantSuppliers.map((supplier) => {
-          const supplierDayOffset = weekDays.indexOf(
-            formatDate(supplier.date).str
-          );
+        {importantSuppliers?.map((supplier) => {
+          const supplierDayOffset = 1;
           return (
             <TouchableOpacity
               key={supplier.id}
@@ -49,7 +53,7 @@ export default function ImportantSuppliersScreen({
                 {supplier.company}
               </Text>
               <Text style={[styles.text, styles.date]}>
-                {formatDate(supplier.date).long}
+                {supplier.days.join(', ')}
               </Text>
             </TouchableOpacity>
           );

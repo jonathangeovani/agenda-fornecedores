@@ -10,137 +10,52 @@ import {
   ScrollView,
 } from 'react-native';
 import { MainStackParamList } from '../routes/MainStackParamList';
-import { supplierCollection } from '../utils';
-import _ from 'lodash';
-import { formatDate } from '../utils/date';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { SupplierData, useSupplierDatabase } from '../db/useSupplierDatabase';
+import { DAYS } from '../constants';
+import { Checkbox } from '../components/checkbox';
 
 type SupplierDetailScreenProp = NativeStackScreenProps<
   MainStackParamList,
   'SupplierDetail'
 >;
 
-const confirmToSave = () => {
-  Alert.alert('Confirmar', 'Deseja salvar as alterações feitas?', [
-    {
-      text: 'Cancelar',
-      onPress: () => console.log('Cancelar'),
-      style: 'cancel',
-    },
-    {
-      text: 'OK',
-      onPress: () => console.log('OK'),
-      style: 'default',
-    },
-  ]);
-};
-
-const confirmToDelete = () => {
-  Alert.alert('Atenção', 'Deseja apagar todos os dados do fornecedor?', [
-    {
-      text: 'Cancelar',
-      onPress: () => console.log('Cancelar'),
-      style: 'cancel',
-    },
-    {
-      text: 'Apagar',
-      onPress: () => console.log('Delete'),
-      style: 'destructive',
-    },
-  ]);
-};
-
-type CheckboxProps = {
-  day: string;
-  checked: boolean;
-  onPress: () => void;
-};
-
-const Checkbox = ({ day, checked, onPress }: CheckboxProps) => {
-  return (
-    <TouchableOpacity
-      style={{
-        marginHorizontal: 5,
-        marginVertical: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 10,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: checked ? '#0c0' : '#ccc',
-        backgroundColor: checked ? '#00cc0012' : undefined,
-      }}
-      onPress={onPress}
-    >
-      <Text
-        style={{
-          fontSize: 16,
-          fontWeight: checked ? 500 : 400,
-        }}
-      >
-        {day}
-      </Text>
-    </TouchableOpacity>
-  );
-};
-
 export default function SupplierDetailScreen({
   route,
+  navigation,
 }: SupplierDetailScreenProp) {
-  const supplierDetails = supplierCollection.filter(
-    (supplier) => supplier.id == route.params.id
-  )[0];
+  const suppliersDb = useSupplierDatabase();
+  const [supplier, setSupplier] = useState<SupplierData>();
 
-  const days = [
-    {
-      id: 0,
-      name: 'Segunda-feira',
-      selected: formatDate(supplierDetails.date).long == 'Segunda-feira',
-    },
-    {
-      id: 1,
-      name: 'Terça-feira',
-      selected: formatDate(supplierDetails.date).long == 'Terça-feira',
-    },
-    {
-      id: 2,
-      name: 'Quarta-feira',
-      selected: formatDate(supplierDetails.date).long == 'Quarta-feira',
-    },
-    {
-      id: 3,
-      name: 'Quinta-feira',
-      selected: formatDate(supplierDetails.date).long == 'Quinta-feira',
-    },
-    {
-      id: 4,
-      name: 'Sexta-feira',
-      selected: formatDate(supplierDetails.date).long == 'Sexta-feira',
-    },
-    {
-      id: 5,
-      name: 'Sábado',
-      selected: formatDate(supplierDetails.date).long == 'Sábado',
-    },
-    {
-      id: 6,
-      name: 'Domingo',
-      selected: formatDate(supplierDetails.date).long == 'Domingo',
-    },
-  ];
+  const [weekDays, setWeekDays] = useState(
+    DAYS.map((day, idx) => {
+      return {
+        id: idx,
+        name: day,
+        selected: supplier?.days.includes(day) || false,
+      };
+    })
+  );
 
-  const [name, setName] = useState<string>(supplierDetails.name);
-  const [company, setCompany] = useState<string>(supplierDetails.company);
-  const [phone, setPhone] = useState<string>(supplierDetails.phone);
-  const [customDate, setCustomDate] = useState<boolean>(false);
+  const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [phone, setPhone] = useState('');
+  const [deliveryDays, setDeliveryDays] = useState(weekDays);
+  const [isImportant, setIsImportant] = useState<boolean>(false);
+
   const [nameIsHighlighted, setNameIsHighlighted] = useState<boolean>(false);
   const [companyIsHighlighted, setCompanyIsHighlighted] =
     useState<boolean>(false);
   const [phoneIsHighlighted, setPhoneIsHighlighted] = useState<boolean>(false);
-  const [isImportant, setIsImportant] = useState<boolean>(false);
-  const [fieldChaged, setFieldChanged] = useState<boolean>(false);
-  const [isInvalid, setIsInvalid] = useState<boolean>(false);
 
-  const [deliveryDays, setDeliveryDays] = useState(days);
+  const [fieldChaged, setFieldChanged] = useState<boolean>(false);
+  const isInvalid = useMemo(() => {
+    const emptyFields =
+      (!name && !company) ||
+      deliveryDays.filter((day) => day.selected).length == 0;
+
+    return emptyFields || !fieldChaged;
+  }, [name, company, phone, deliveryDays, isImportant]);
 
   const toggleDay = useCallback((id: number) => {
     setFieldChanged(true);
@@ -157,13 +72,85 @@ export default function SupplierDetailScreen({
     });
   }, []);
 
-  useEffect(() => {
-    const emptyFields =
-      (!name && !company) ||
-      deliveryDays.filter((day) => day.selected).length == 0;
+  const confirmToSave = () => {
+    Alert.alert('Confirmar', `Salvar alterações em ${name}?`, [
+      {
+        text: 'Cancelar',
+        onPress: () => getSupplier(),
+        style: 'cancel',
+      },
+      {
+        text: 'OK',
+        onPress: () => {
+          updateSupplier();
+          navigation.goBack();
+        },
+        style: 'default',
+      },
+    ]);
+  };
 
-    setIsInvalid(emptyFields || !fieldChaged);
-  }, [name, company, deliveryDays]);
+  const confirmToDelete = () => {
+    Alert.alert('Atenção', 'Deseja apagar todos os dados do fornecedor?', [
+      {
+        text: 'Cancelar',
+        onPress: () => console.log('Cancelar'),
+        style: 'cancel',
+      },
+      {
+        text: 'Apagar',
+        onPress: () => {
+          suppliersDb.deleteSupplier(route.params.id);
+          navigation.goBack();
+        },
+        style: 'destructive',
+      },
+    ]);
+  };
+
+  const getSupplier = async () => {
+    const response = await suppliersDb.getSupplier(route.params.id);
+    setSupplier(response);
+    if (response) {
+      setName(response.name);
+      setCompany(response.company);
+      setPhone(response.phone);
+      setIsImportant(response.isImportant);
+      setDeliveryDays((oldValue) =>
+        oldValue.map((day) =>
+          response.days.includes(day.name) ? { ...day, selected: true } : day
+        )
+      );
+      setFieldChanged(false);
+    }
+  };
+
+  const updateSupplier = async () => {
+    const supplierDays = deliveryDays
+      .filter((day) => day.selected)
+      .map((days) => days.name);
+
+    const supplierData = {
+      id: route.params.id,
+      name,
+      company,
+      phone,
+      isImportant,
+      days: supplierDays,
+    };
+
+    try {
+      await suppliersDb.updateSupplier(supplierData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getSupplier();
+
+    return () => {};
+  }, []);
 
   return (
     <ScrollView>
@@ -180,7 +167,6 @@ export default function SupplierDetailScreen({
                 },
               ]}
               placeholder="Nome"
-              defaultValue={supplierDetails.name}
               clearButtonMode="while-editing"
               textContentType="name"
               onFocus={() => setNameIsHighlighted(true)}
@@ -204,7 +190,6 @@ export default function SupplierDetailScreen({
                 },
               ]}
               placeholder="Nome da empresa"
-              defaultValue={supplierDetails.company}
               clearButtonMode="while-editing"
               textContentType="organizationName"
               onFocus={() => setCompanyIsHighlighted(true)}
@@ -228,7 +213,6 @@ export default function SupplierDetailScreen({
                 },
               ]}
               placeholder="Telefone"
-              defaultValue={supplierDetails.phone}
               clearButtonMode="while-editing"
               keyboardType="numbers-and-punctuation"
               textContentType="telephoneNumber"
@@ -238,6 +222,7 @@ export default function SupplierDetailScreen({
                 const text = e.nativeEvent.text;
                 setPhone(text);
                 setFieldChanged(true);
+                console.log(fieldChaged);
               }}
               value={phone}
             />
@@ -249,52 +234,13 @@ export default function SupplierDetailScreen({
                 return (
                   <Checkbox
                     key={day.id}
-                    day={day.name}
+                    text={day.name}
                     checked={day.selected}
                     onPress={() => toggleDay(day.id)}
                   />
                 );
               })}
             </ScrollView>
-            <View style={styles.switchWrapper}>
-              <Text style={{ flex: 1, fontSize: 18 }}>
-                Entrega toda semana:
-              </Text>
-              <Switch
-                onChange={() => {
-                  setFieldChanged(true);
-                  setCustomDate((oldValue) => !oldValue);
-                }}
-                value={!customDate}
-              />
-            </View>
-            {customDate && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                }}
-              >
-                <Text style={{ fontSize: 18 }}>Entrega a cada:</Text>
-                <TextInput
-                  style={{
-                    fontSize: 20,
-                    marginHorizontal: 8,
-                    paddingVertical: 4,
-                    paddingHorizontal: 10,
-                    borderBottomWidth: 1,
-                  }}
-                  defaultValue="2"
-                  keyboardType="number-pad"
-                  clearTextOnFocus
-                  onEndEditing={(e) => {
-                    if (!(Number(e.nativeEvent.text) > 1)) setCustomDate(false);
-                  }}
-                />
-                <Text style={{ fontSize: 18 }}>semanas</Text>
-              </View>
-            )}
             <View style={styles.switchWrapper}>
               <Text style={{ flex: 1, fontSize: 18 }}>
                 Marcar como importante:
@@ -323,7 +269,7 @@ export default function SupplierDetailScreen({
           >
             <Text style={styles.buttonText}>Salvar alterações</Text>
           </TouchableOpacity>
-          {supplierDetails.id && (
+          {supplier?.id && (
             <TouchableOpacity
               style={[
                 styles.button,

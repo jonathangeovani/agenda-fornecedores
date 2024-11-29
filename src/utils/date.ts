@@ -37,3 +37,13 @@ export const getWeekDays = (day: Date) => {
   });
   return weekDays[0];
 };
+
+export const getWeekDaysFormated = (date: Date) => {
+  const days = getWeekDays(date);
+  const formated = days.map((day) => {
+    const splitedDay = day.split('-');
+    return `${splitedDay[2]}-${splitedDay[1]}-${splitedDay[0]}T03:00:00.000Z`;
+  });
+  const weekDays = formated.map((day) => formatDate(new Date(day)).long);
+  return weekDays;
+};
