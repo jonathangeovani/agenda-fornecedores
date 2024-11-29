@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   Linking,
   Image,
+  Alert,
 } from 'react-native';
 import AgendaList from '../components/agendaList';
-import _ from 'lodash';
 import { MainStackParamList } from '../routes/MainStackParamList';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SupplierData, useSupplierDatabase } from '../db/useSupplierDatabase';
@@ -17,11 +17,20 @@ import { DAYS } from '../constants';
 type AgendaScreenProps = NativeStackScreenProps<MainStackParamList, 'Agenda'>;
 
 const ScheduleItem: React.FC<{ data: SupplierData }> = ({ data }) => {
+  const handleClick = () => {
+    if (data.phone) {
+      Linking.openURL(`tel:${data.phone.replaceAll(/\D/g, '')}`);
+    } else {
+      Alert.alert(
+        'Nenhum telefone cadastrado',
+        `O fornecedor ${data.name} não tem um telefone associado.`,
+        [{ text: 'OK', style: 'default' }]
+      );
+    }
+  };
+
   return (
-    <TouchableOpacity
-      onPress={() => Linking.openURL(`tel:${data.phone.replaceAll(/\D/g, '')}`)}
-      style={itemStyles.container}
-    >
+    <TouchableOpacity onPress={handleClick} style={itemStyles.container}>
       <View style={itemStyles.header}>
         <Text style={itemStyles.name}>{data.name}</Text>
         {data.isImportant && (
