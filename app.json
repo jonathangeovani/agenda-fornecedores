@@ -1,6 +1,7 @@
 {
   "expo": {
-    "name": "agenda-fornecedores",
+    "name": "Agenda",
+    "description": "Uma agenda para gestão de forncedores.",
     "slug": "agenda-fornecedores",
     "version": "1.0.0",
     "orientation": "portrait",
